@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: vendas
+    volumes:
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+
+  produtos:
+    build:
+      context: ./produtos
+    container_name: produtos
+    environment:
+      FLASK_APP: app.py
+      FLASK_ENV: development
+    depends_on:
+      - mysql
+    ports:
+      - "5001:5001"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"

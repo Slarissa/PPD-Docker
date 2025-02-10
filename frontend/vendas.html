@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realizar Venda</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Realizar Venda</h1>
+
+    <h2>Vendas Realizadas</h2>
+    
+    <table id="vendas-tabela">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody id="vendas-lista">
+
+        </tbody>
+    </table>
+
+    <h2>Realizar Venda</h2>
+    <form id="form-venda">
+
+        <label for="cliente">Cliente:</label>
+        <select id="cliente" required></select><br><br>
+        
+        <label for="produto">Produto:</label>
+        <select id="produto" required></select><br>
+        
+        <button type="submit">Realizar Venda</button>
+    </form>
+
+    <button class="voltar" onclick="window.location.href='index.html';">Voltar</button>
+    
+    <script>
+        function carregarProdutos() {
+            fetch('http://localhost:5001/produtos')
+                .then(response => response.json())
+                .then(data => {
+                    const selectProduto = document.getElementById('produto');
+                    data.forEach(produto => {
+                        const option = document.createElement('option');
+                        option.value = produto.id;
+                        option.textContent = `${produto.nome} - R$ ${produto.valor.toFixed(2)}`;
+                        selectProduto.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar produtos:', error));
+        }
+
+        function carregarClientes() {
+            fetch('http://localhost:5001/clientes')
+                .then(response => response.json())
+                .then(data => {
+                    const selectCliente = document.getElementById('cliente');
+                    data.forEach(cliente => {
+                        const option = document.createElement('option');
+                        option.value = cliente.id;
+                        option.textContent = cliente.nome;
+                        selectCliente.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar clientes:', error));
+        }
+
+        function listarVendas() {
+            fetch('http://localhost:5001/vendas')
+                .then(response => response.json())
+                .then(data => {
+                    const tabela = document.getElementById('vendas-lista');
+                    tabela.innerHTML = ''; 
+
+                    data.forEach(venda => {
+                        const tr = document.createElement('tr');
+                        
+                        const tdProduto = document.createElement('td');
+                        tdProduto.textContent = venda.produto.nome;
+                        
+                        const tdCliente = document.createElement('td');
+                        tdCliente.textContent = venda.cliente.nome;
+
+                        const tdData = document.createElement('td');
+                        tdData.textContent = new Date(venda.data).toLocaleString();
+
+                        const tdValor = document.createElement('td');
+                        tdValor.textContent = `R$ ${venda.valor.toFixed(2)}`;
+
+                        tr.appendChild(tdProduto);
+                        tr.appendChild(tdCliente);
+                        tr.appendChild(tdData);
+                        tr.appendChild(tdValor);
+
+                        tabela.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Erro ao listar vendas:', error));
+        }
+
+        document.getElementById('form-venda').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const produtoId = document.getElementById('produto').value;
+            const clienteId = document.getElementById('cliente').value;
+
+            const produto = { id: produtoId };
+            const cliente = { id: clienteId };
+
+            const venda = {
+                produto: produto,
+                cliente: cliente,
+                data: new Date(),
+                valor: 0 
+            };
+
+            fetch('http://localhost:5001/vendas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(venda)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);  
+                listarVendas();  
+            })
+            .catch(error => console.error('Erro ao realizar venda:', error));
+        });
+
+
+        window.onload = function() {
+            carregarProdutos();
+            carregarClientes();
+            listarVendas();
+        };
+    </script>
+</body>
+</html>

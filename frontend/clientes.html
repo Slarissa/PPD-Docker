@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Clientes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Cadastro de Clientes</h1>
+
+    <h2>Listar Clientes</h2>
+    
+    <table id="clientes-tabela">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+            </tr>
+        </thead>
+        <tbody id="clientes-lista">
+        </tbody>
+    </table>
+
+    <h2>Cadastrar Cliente</h2>
+    <form id="form-cliente">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" required><br>
+        <label for="telefone">Telefone:</label>
+        <input type="tel" id="telefone" required><br><br>
+        <button type="submit">Cadastrar Cliente</button>
+    </form>
+
+    <button class="voltar" onclick="window.location.href='index.html'">Voltar</button>
+
+    <script>
+        function listarClientes() {
+            fetch('http://localhost:5001/clientes')
+                .then(response => response.json())
+                .then(data => {
+                    const tabela = document.getElementById('clientes-lista');
+                    tabela.innerHTML = ''; 
+
+                    data.forEach(cliente => {
+                        const tr = document.createElement('tr');
+                        
+                        const tdNome = document.createElement('td');
+                        tdNome.textContent = cliente.nome;
+                        
+                        const tdTelefone = document.createElement('td');
+                        tdTelefone.textContent = cliente.telefone;
+
+                        tr.appendChild(tdNome);
+                        tr.appendChild(tdTelefone);
+
+                        tabela.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Erro ao listar clientes:', error));
+        }
+
+        document.getElementById('form-cliente').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const nome = document.getElementById('nome').value;
+            const telefone = document.getElementById('telefone').value;
+
+            const cliente = {
+                nome: nome,
+                telefone: telefone
+            };
+
+            fetch('http://localhost:5001/clientes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cliente)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message); 
+                document.getElementById('form-cliente').reset();  
+                listarClientes();  
+            })
+            .catch(error => console.error('Erro ao cadastrar cliente:', error));
+        });
+
+        window.onload = listarClientes;
+    </script>
+</body>
+</html>
