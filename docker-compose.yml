@@ -22,3 +22,11 @@ services:
       - "5001:80"
     depends_on:
       - mysql
+
+  clientes:
+    build: ./clientes
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mysql
+  
