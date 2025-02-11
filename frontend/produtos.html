@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Produtos</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <h1>Cadastro de Produtos</h1>
 
@@ -20,7 +22,6 @@
             </tr>
         </thead>
         <tbody id="produtos-lista">
-    
         </tbody>
     </table>
 
@@ -36,66 +37,63 @@
     </form>
 
     <button class="voltar" onclick="window.location.href='index.html';">Voltar</button>
-    
+
     <script>
         function listarProdutos() {
-            fetch('http://localhost:5001/produtos')
+            fetch('http://localhost:5001')
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
                     const tabela = document.getElementById('produtos-lista');
-                    tabela.innerHTML = ''; 
-                    data.forEach(produto => {
-                        const tr = document.createElement('tr');
-                        
-                        const tdNome = document.createElement('td');
-                        tdNome.textContent = produto.nome;
-                        
-                        const tdDescricao = document.createElement('td');
-                        tdDescricao.textContent = produto.descricao;
+                    tabela.innerHTML = '';
 
-                        const tdValor = document.createElement('td');
-                        tdValor.textContent = `R$ ${produto.valor.toFixed(2)}`;
-
-                        tr.appendChild(tdNome);
-                        tr.appendChild(tdDescricao);
-                        tr.appendChild(tdValor);
-
-                        tabela.appendChild(tr);
-                    });
+                    if (data.length === 0) {
+                        tabela.innerHTML = '<tr><td colspan="3">Nenhum produto cadastrado.</td></tr>';
+                    } else {
+                        data.forEach(produto => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                    <td>${produto.nome}</td>
+                                    <td>${produto.descricao}</td>
+                                    <td>R$ ${parseFloat(produto.valor).toFixed(2)}</td>
+                                `;
+                            tabela.appendChild(tr);
+                        });
+                    }
                 })
                 .catch(error => console.error('Erro ao listar produtos:', error));
         }
 
-        document.getElementById('form-produto').addEventListener('submit', function(event) {
+        document.getElementById('form-produto').addEventListener('submit', function (event) {
             event.preventDefault();
 
             const nome = document.getElementById('nome').value;
             const descricao = document.getElementById('descricao').value;
-            const valor = document.getElementById('valor').value;
+            const valor = parseFloat(document.getElementById('valor').value);
 
-            const produto = {
-                nome: nome,
-                descricao: descricao,
-                valor: parseFloat(valor)
-            };
-
-            fetch('http://localhost:5001/produtos', {
+            fetch('http://localhost:5001', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(produto)
+                body: JSON.stringify({
+                    nome: nome,
+                    descricao: descricao,
+                    valor: valor
+                })
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message); 
-                document.getElementById('form-produto').reset();
-                listarProdutos(); 
-            })
-            .catch(error => console.error('Erro ao cadastrar produto:', error));
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    listarProdutos();
+                    document.getElementById('form-produto').reset();
+                })
+                .catch(error => console.error('Erro ao cadastrar produto:', error));
         });
 
         window.onload = listarProdutos;
+
     </script>
 </body>
+
 </html>

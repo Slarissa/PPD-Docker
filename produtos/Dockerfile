@@ -1,13 +1,9 @@
-FROM python:3.9-slim
+FROM php:7.4-apache
 
-WORKDIR /app
+RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd pdo pdo_mysql
 
-COPY requirements.txt .
+RUN a2enmod rewrite
 
-RUN pip install -r requirements.txt
-
-COPY . .
-
-EXPOSE 5001
-
-CMD ["python", "app.py"]
+COPY ./index.php /var/www/html/index.php

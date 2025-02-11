@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Clientes</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <h1>Cadastro de Clientes</h1>
 
     <h2>Listar Clientes</h2>
-    
+
     <table id="clientes-tabela">
         <thead>
             <tr>
@@ -39,14 +41,14 @@
                 .then(response => response.json())
                 .then(data => {
                     const tabela = document.getElementById('clientes-lista');
-                    tabela.innerHTML = ''; 
+                    tabela.innerHTML = '';
 
                     data.forEach(cliente => {
                         const tr = document.createElement('tr');
-                        
+
                         const tdNome = document.createElement('td');
                         tdNome.textContent = cliente.nome;
-                        
+
                         const tdTelefone = document.createElement('td');
                         tdTelefone.textContent = cliente.telefone;
 
@@ -59,7 +61,7 @@
                 .catch(error => console.error('Erro ao listar clientes:', error));
         }
 
-        document.getElementById('form-cliente').addEventListener('submit', function(event) {
+        document.getElementById('form-cliente').addEventListener('submit', function (event) {
             event.preventDefault();
 
             const nome = document.getElementById('nome').value;
@@ -77,16 +79,17 @@
                 },
                 body: JSON.stringify(cliente)
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message); 
-                document.getElementById('form-cliente').reset();  
-                listarClientes();  
-            })
-            .catch(error => console.error('Erro ao cadastrar cliente:', error));
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    document.getElementById('form-cliente').reset();
+                    listarClientes();
+                })
+                .catch(error => console.error('Erro ao cadastrar cliente:', error));
         });
 
         window.onload = listarClientes;
     </script>
 </body>
+
 </html>
