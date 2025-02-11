@@ -29,4 +29,12 @@ services:
       - "5002:5002"
     depends_on:
       - mysql
-  
+
+  vendas:
+    build: ./vendas 
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mysql
+      - produtos
+      - clientes

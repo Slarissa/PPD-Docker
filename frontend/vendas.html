@@ -6,44 +6,73 @@
     <title>Realizar Venda</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <h1>Realizar Venda</h1>
 
     <h2>Vendas Realizadas</h2>
-    
+
     <table id="vendas-tabela">
         <thead>
             <tr>
                 <th>Data</th>
                 <th>Cliente</th>
                 <th>Produto</th>
-                <th>Valor</th>
+                <th>Total da Compra</th>
             </tr>
         </thead>
-        <tbody id="vendas-lista">
-
-        </tbody>
+        <tbody id="vendas-lista"></tbody>
     </table>
 
     <h2>Realizar Venda</h2>
     <form id="form-venda">
-
         <label for="cliente">Cliente:</label>
         <select id="cliente" required></select><br><br>
-        
+
         <label for="produto">Produto:</label>
         <select id="produto" required></select><br>
-        
+
+        <label for="valor-produto">Valor do Produto:</label>
+        <span id="valor-produto">R$ 0,00</span><br><br>
+
         <button type="submit">Realizar Venda</button>
     </form>
 
-    <button class="voltar" onclick="window.location.href='index.html';">Voltar</button>
-    
+    <button class="voltar" onclick="window.location.href='index.html'">Voltar</button>
+
     <script>
+        let produtos = [];
+
+        function listarVendas() {
+            fetch('http://localhost:5003/vendas')
+                .then(response => response.json())
+                .then(data => {
+                    const tabela = document.getElementById('vendas-lista');
+                    tabela.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tabela.innerHTML = '<tr><td colspan="4">Nenhuma venda realizada.</td></tr>';
+                    } else {
+                        data.forEach(venda => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${new Date(venda.data).toLocaleString()}</td>
+                                <td>${venda.cliente.nome}</td>
+                                <td>${venda.produto.nome}</td>
+                                <td>R$ ${venda.valor.toFixed(2)}</td>
+                            `;
+                            tabela.appendChild(tr);
+                        });
+                    }
+                })
+                .catch(error => console.error('Erro ao listar vendas:', error));
+        }
+
         function carregarProdutos() {
             fetch('http://localhost:5001/produtos')
                 .then(response => response.json())
                 .then(data => {
+                    produtos = data;
                     const selectProduto = document.getElementById('produto');
                     data.forEach(produto => {
                         const option = document.createElement('option');
@@ -56,7 +85,7 @@
         }
 
         function carregarClientes() {
-            fetch('http://localhost:5001/clientes')
+            fetch('http://localhost:5002/clientes')
                 .then(response => response.json())
                 .then(data => {
                     const selectCliente = document.getElementById('cliente');
@@ -70,72 +99,50 @@
                 .catch(error => console.error('Erro ao carregar clientes:', error));
         }
 
-        function listarVendas() {
-            fetch('http://localhost:5001/vendas')
-                .then(response => response.json())
-                .then(data => {
-                    const tabela = document.getElementById('vendas-lista');
-                    tabela.innerHTML = ''; 
+        // Atualizar valor do produto quando selecionado
+        document.getElementById('produto').addEventListener('change', function () {
+            const produtoId = this.value;
+            const produtoSelecionado = produtos.find(produto => produto.id == produtoId);
 
-                    data.forEach(venda => {
-                        const tr = document.createElement('tr');
-                        
-                        const tdProduto = document.createElement('td');
-                        tdProduto.textContent = venda.produto.nome;
-                        
-                        const tdCliente = document.createElement('td');
-                        tdCliente.textContent = venda.cliente.nome;
+            if (produtoSelecionado) {
+                document.getElementById('valor-produto').textContent = `R$ ${produtoSelecionado.valor.toFixed(2)}`;
+            }
+        });
 
-                        const tdData = document.createElement('td');
-                        tdData.textContent = new Date(venda.data).toLocaleString();
-
-                        const tdValor = document.createElement('td');
-                        tdValor.textContent = `R$ ${venda.valor.toFixed(2)}`;
-
-                        tr.appendChild(tdProduto);
-                        tr.appendChild(tdCliente);
-                        tr.appendChild(tdData);
-                        tr.appendChild(tdValor);
-
-                        tabela.appendChild(tr);
-                    });
-                })
-                .catch(error => console.error('Erro ao listar vendas:', error));
-        }
-
-        document.getElementById('form-venda').addEventListener('submit', function(event) {
+        document.getElementById('form-venda').addEventListener('submit', function (event) {
             event.preventDefault();
 
             const produtoId = document.getElementById('produto').value;
             const clienteId = document.getElementById('cliente').value;
 
-            const produto = { id: produtoId };
+            const produtoSelecionado = produtos.find(produto => produto.id == produtoId);
             const cliente = { id: clienteId };
 
+            const quantidade = 1; // Para este exemplo, a quantidade é 1
             const venda = {
-                produto: produto,
+                produto: produtoSelecionado,
                 cliente: cliente,
                 data: new Date(),
-                valor: 0 
+                quantidade: quantidade,
+                valor: produtoSelecionado.valor * quantidade
             };
 
-            fetch('http://localhost:5001/vendas', {
+            fetch('http://localhost:5003/vendas', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(venda)
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);  
-                listarVendas();  
-            })
-            .catch(error => console.error('Erro ao realizar venda:', error));
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    listarVendas();
+                })
+                .catch(error => console.error('Erro ao realizar venda:', error));
         });
 
-
-        window.onload = function() {
+        window.onload = function () {
             carregarProdutos();
             carregarClientes();
             listarVendas();

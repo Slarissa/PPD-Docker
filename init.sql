@@ -25,3 +25,14 @@ INSERT INTO clientes (nome, telefone) VALUES
 ('Ana Silva', '41111111111'),
 ('Maria Souza', '4222222222'),
 ('Carlos Lima', '43333333333');
+
+
+CREATE TABLE IF NOT EXISTS vendas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT,
+    cliente_id INT,
+    data DATETIME DEFAULT CURRENT_TIMESTAMP,
+    valor DECIMAL(10, 2),
+    FOREIGN KEY (produto_id) REFERENCES produtos(id),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+);
